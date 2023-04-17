@@ -1,0 +1,30 @@
+.imhs-sfc-object {
+  border: 1px dashed #000;
+  .imhs-sf-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    label {
+      width: 120px;
+    }
+    div {
+      flex: 1;
+    }
+  }
+}
+
+.imhs-sfc-array {
+}
+
+.ihms-sf-submit {
+}
+
+.imhs-sf {
+}
+
+.imhs-sf-item {
+  .ant-form-item-label {
+    width: 120px;
+    overflow: hidden;
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "$schema": "http://localhost:3091/src/SchemaForm/schema/base.json",
+  "title": "Core schema for json-based WesForm",
+  "type": "object",
+  "definitions": {
+    "labelCol": {
+      "type": "object"
+    },
+    "labelAlign": {
+      "enum": ["left", "right"]
+    },
+    "ruleType": {
+      "enum": [
+        "string",
+        "number",
+        "boolean",
+        "method",
+        "regexp",
+        "integer",
+        "float",
+        "object",
+        "enum",
+        "date",
+        "url",
+        "hex",
+        "email"
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "注册过的校验规则名",
+          "type": "string"
+        },
+        "warningOnly": { "type": "boolean" },
+        "len": { "type": "number" },
+        "max": { "type": "number" },
+        "message": { "type": "string" },
+        "min": { "type": "number" },
+        "required": { "type": "boolean" },
+        "type": { "$ref": "#/definitions/ruleType" },
+        "whitespace": { "type": "boolean" }
+      }
+    },
+    "field": {
+      "description": "定义一个表单字段",
+      "type": "object",
+      "properties": {
+        "section": {
+          "description": "区块开始",
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        },
+        "type": {
+          "description": "数据格式：系统会默认根据这个值选择合适的组件，如果不满足需要使用 component 声明",
+          "enum": [
+            "number",
+            "text",
+            "integer",
+            "money",
+            "date",
+            "datetime",
+            "time",
+            "bool",
+            "email",
+            "url",
+            "phone",
+            "object",
+            "map",
+            "array"
+          ]
+        },
+        "colon": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "noStyle": { "type": "boolean" },
+        "labelAlign": { "$ref": "#/definitions/labelAlign" },
+        "labelCol": { "$ref": "#/definitions/labelCol" },
+        "name": {
+          "description": "字段的 key，同表单内唯一，系统会自动处理数据的层级",
+          "type": "string"
+        },
+        "enum": {
+          "description": "字段值为枚举类型时设置该选项，配置一个 key-value 结构，key 作为值的选项，value 作为显示文本， 默认系统帮助使用 Select 控件；如果值类型为 array，则使用 Select 的多选功能",
+          "type": "object"
+        },
+        "component": {
+          "oneOf": [
+            {
+              "description": "组册的组件名",
+              "type": "string"
+            },
+            {
+              "description": "声明一个组件",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "组册的组件名",
+                  "type": "string"
+                },
+                "props": {
+                  "description": "组件执行时传入的静态参数",
+                  "type": "object"
+                }
+              }
+            }
+          ]
+        },
+        "validator": {
+          "description": "对字段的声明验规则",
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "description": "/待确认 触发校验的时机",
+              "enum": ["blur", "change", "submit"]
+            },
+            "rules": {
+              "description": "具体的规则列表",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/rule"
+              }
+            }
+          }
+        },
+        "label": {
+          "description": "字段的名称，未设置表示不显示 label 占位",
+          "type": "string"
+        },
+        "tooltip": {
+          "description": "帮助信息，对字段提供详细解释",
+          "type": "string"
+        },
+        "readonly": {
+          "description": "设置只读",
+          "type": "boolean"
+        },
+        "disabled": {
+          "description": "是否禁用",
+          "type": "boolean"
+        },
+        "required": {
+          "description": "是否必填：设置为 true 时会默认帮用户加入 required 检验规则",
+          "type": "boolean"
+        },
+        "default": {
+          "description": "默认值，todo"
+        },
+        "wrapperProps": {
+          "type": "object",
+          "description": "控件的静态参数",
+          "properties": {}
+        },
+        "struct": {
+          "description": "如果 type 是 map 或者 array，需要在此定义内部结构",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/field"
+          }
+        }
+      },
+      "required": ["type"]
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "formProps": {
+      "description": "表单静态参数",
+      "type": "object",
+      "properties": {
+        "colon": { "type": "boolean" },
+        "labelAlign": { "$ref": "#/definitions/labelAlign" },
+        "labelWrap": { "type": "boolean" },
+        "labelCol": { "$ref": "#/definitions/labelCol" },
+        "size": { "enum": ["small", "middle", "large"] },
+        "columns": {
+          "description": "列布局，针对‘标准’尺寸屏幕 / 待讨论",
+          "enum": ["1", "2", "3", "4"]
+        },
+        "preserve": { "type": "boolean" },
+        "layout": { "enum": ["horizontal", "vertical", "inline"] }
+      }
+    },
+    "fields": {
+      "description": "表单字段",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/field"
+      }
+    }
+  },
+  "additionalProperties": false
+}
