@@ -6,6 +6,8 @@ import { RuleObject } from 'antd/es/form';
 export interface SFProviderProps {
   validators?: Record<string, RuleObject[] | RuleObject>;
   components?: Record<string, React.FC>;
+  ifTranslate?: (txt: string) => boolean;
+  t?: (key: string, ...args: any[]) => string;
 }
 
 const normalizeValidators = (
@@ -31,6 +33,12 @@ export const SchemaFormProvider = (
     const fields = new Map<string, any>();
 
     return {
+      T: (txt: string) => {
+        if (props.ifTranslate && props.t && props.ifTranslate(txt)) {
+          return props.t(txt);
+        }
+        return txt;
+      },
       collect: (name: string, field: any) => {
         if (process.env.NODE_ENV === 'development') {
           if (fields.has(name)) {

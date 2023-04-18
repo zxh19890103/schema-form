@@ -9,10 +9,7 @@ import { CollectedField as CollectedFieldMeta, ContextValue } from './context';
 
 export { type CoreSchemaForJsonBasedWesForm, type RuleType };
 
-export interface SchemaField
-  extends Field,
-    SchemaFieldEnhancement,
-    SchemaFieldRenderred {}
+export interface SchemaField extends Field, SchemaFieldEnhancement {}
 
 export interface AntdFormControlPropsBase<V = any> {
   value?: V;
@@ -39,11 +36,31 @@ interface SchemaFieldEnhancementGetInitialStateReturns {
 }
 
 export interface SchemaFieldEnhancement {
+  renderLabel?: (
+    schema: SchemaField,
+    form: SchemaFormInstance
+  ) => React.ReactNode;
+
+  renderPlaceholder?: (
+    schema: SchemaField,
+    form: SchemaFormInstance
+  ) => React.ReactNode;
+
+  renderTooltip?: (
+    schema: SchemaField,
+    form: SchemaFormInstance
+  ) => React.ReactNode;
+  /**
+   *
+   */
   beforeChange?: (
     value: any,
     schema: SchemaField,
     form: SchemaFormInstance
   ) => Promise<boolean> | boolean;
+  /**
+   *
+   */
   afterChanged?: (
     value: any,
     schame: SchemaField,
@@ -62,13 +79,12 @@ export interface SchemaFieldEnhancement {
     | SchemaFieldEnhancementGetInitialStateReturns;
 }
 
-export interface SchemaFieldRenderred {}
-
 export interface SchemaFormInstanceAbstract {
   $ctx: ContextValue;
   $schema: CoreSchemaForJsonBasedWesForm;
   $defaultSubmit: VoidFunction;
   $defaultReset: VoidFunction;
+  $submitting: boolean;
 
   isRequired(name: string): boolean;
   isEnabled(name: string): boolean;

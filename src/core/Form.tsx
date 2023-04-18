@@ -7,13 +7,12 @@ import {
   CoreSchemaForJsonBasedWesForm,
   SchemaFormInstance,
   SchemaFieldEnhancement,
-  SchemaFieldRenderred,
   GenericFormSchema,
 } from './interfaces';
 import Match from './Match';
 import { merge } from './util';
 import context from './context';
-import formEnhancementProto from './enhance';
+import { SchemaFormImpl } from './enhance';
 import Section from './Section';
 import delay from './delay';
 
@@ -82,7 +81,9 @@ const RunForm = (props: React.PropsWithChildren<RunFormProps>) => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    Object.setPrototypeOf(form, formEnhancementProto);
+    Object.setPrototypeOf(form, SchemaFormImpl.prototype);
+    // initialize form
+    Object.assign(form, { ...new SchemaFormImpl() });
 
     (async () => {
       let defaultVal = (await props.getDefaultValue?.()) ?? {};
@@ -143,6 +144,7 @@ const RunForm = (props: React.PropsWithChildren<RunFormProps>) => {
   form.$defaultSubmit = onSubmit;
   form.$defaultReset = onReset;
   form.$schema = schema;
+  form.$submitting = submitting;
 
   return (
     <Form
@@ -185,6 +187,7 @@ interface SubmitProps {
     schema: CoreSchemaForJsonBasedWesForm;
     onSubmit: VoidFunction;
     onReset: VoidFunction;
+    submitting: boolean;
   }) => React.ReactNode;
 }
 SchemaForm.Submit = (props: SubmitProps) => {
@@ -194,6 +197,7 @@ SchemaForm.Submit = (props: SubmitProps) => {
   if (typeof child === 'function') {
     return child({
       form: form,
+      submitting: form.$submitting,
       schema: form.$schema,
       onSubmit: form.$defaultSubmit,
       onReset: form.$defaultReset,
@@ -247,16 +251,6 @@ SchemaForm.enhanceSchema = function <S extends GenericFormSchema>(
       ...enhancements,
     },
   };
-};
-
-/**
- * @todo rewrite props.
- */
-SchemaForm.renderingSchema = function <S extends GenericFormSchema>(
-  schema: S,
-  config: Record<string, SchemaFieldRenderred>
-) {
-  return schema;
 };
 
 SchemaForm._debug_delay = delay;

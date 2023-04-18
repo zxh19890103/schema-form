@@ -65,6 +65,7 @@
             "date",
             "datetime",
             "time",
+            "month",
             "bool",
             "email",
             "url",
@@ -152,6 +153,9 @@
         },
         "default": {
           "description": "默认值，todo"
+        },
+        "placeholder": {
+          "type": "string"
         },
         "wrapperProps": {
           "type": "object",

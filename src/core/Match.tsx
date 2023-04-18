@@ -26,12 +26,18 @@ interface MatchProps {
 const Match = React.memo((props: MatchProps) => {
   const tick = useTick();
   const componentDivWrap = useRef<HTMLDivElement>(null);
-  const { components, validators, collect, recycle } = useContext(sfc.__ctx__);
+  const { components, validators, collect, recycle, T } = useContext(
+    sfc.__ctx__
+  );
 
+  /**
+   * translate messges of rules.
+   */
   const [field] = useState(() => {
     const descripitor = sfc.normalizeSchemaField(props.schema);
 
     const C = components[descripitor.componentTag];
+
     const rules = descripitor.rules
       .map((rule) => {
         if (rule.name) {
@@ -40,12 +46,22 @@ const Match = React.memo((props: MatchProps) => {
           return rule;
         }
       })
-      .flat();
+      .flat()
+      .map((rule) => {
+        if (typeof rule.message === 'string') {
+          return {
+            ...rule,
+            message: T(rule.message),
+          };
+        }
+        return rule;
+      });
 
     return { descripitor, C, rules };
   });
 
   const { descripitor, C, rules } = field;
+  const { _def: schema, wrapperProps, componentProps } = descripitor;
 
   useEffect(() => {
     collect(descripitor.name, {
@@ -57,27 +73,27 @@ const Match = React.memo((props: MatchProps) => {
 
     (async () => {
       const schema = descripitor._def;
-      if (schema.initialState) {
-        try {
-          const { componentProps, wrapperProps } = descripitor;
+      if (!schema.initialState) return;
 
-          const state = await schema.initialState(schema, props.form);
+      try {
+        const { componentProps, wrapperProps } = descripitor;
 
-          if (!state) return;
+        const state = await schema.initialState(schema, props.form);
 
-          const { value, readOnly, disabled, hidden } = state;
+        if (!state) return;
 
-          if (readOnly !== undefined) componentProps.readOnly = readOnly;
-          if (disabled !== undefined) componentProps.disabled = disabled;
-          if (hidden !== undefined) wrapperProps.hidden = hidden;
+        const { value, readOnly, disabled, hidden } = state;
 
-          if (value !== undefined) {
-            props.form.setFieldValue(schema.name, value);
-          }
+        if (readOnly !== undefined) componentProps.readOnly = readOnly;
+        if (disabled !== undefined) componentProps.disabled = disabled;
+        if (hidden !== undefined) wrapperProps.hidden = hidden;
 
-          tick();
-        } catch (e) {}
-      }
+        if (value !== undefined) {
+          props.form.setFieldValue(schema.name, value);
+        }
+
+        tick();
+      } catch (e) {}
     })();
 
     return () => {
@@ -95,23 +111,36 @@ const Match = React.memo((props: MatchProps) => {
 
   const Wrapper = props.wrapper ?? Form.Item;
 
+  const { renderLabel, renderTooltip } = schema;
+
+  const label = renderLabel
+    ? renderLabel(schema, props.form)
+    : T(wrapperProps.label);
+
+  const tooltip = renderTooltip
+    ? renderTooltip(schema, props.form)
+    : T(wrapperProps.tooltip);
+
   return (
     <Wrapper
-      {...descripitor.wrapperProps}
+      {...wrapperProps}
       {...props.wrapperProps}
+      label={label}
+      tooltip={tooltip}
       className="imhs-sf-item"
       rules={rules as FormRule[]}
     >
       <UniversalInterceptC
         ref={componentDivWrap}
         // no mutation
-        schema={descripitor._def}
+        schema={schema}
         // nenver be mutated
         form={props.form}
         // nenver be mutated.
         C={C}
+        T={T}
         // never be mutated
-        cProps={descripitor.componentProps}
+        cProps={componentProps}
       />
     </Wrapper>
   );
@@ -121,12 +150,13 @@ interface InterceptCProps extends AntdFormControlPropsBase {
   form: SchemaFormInstance;
   schema: SchemaField;
   C: React.FC;
+  T: (txt: string) => string;
   cProps: any;
 }
 
 const UniversalInterceptC = React.forwardRef((props: InterceptCProps, ref) => {
-  const { C, schema, value, onChange } = props;
-  const { beforeChange, afterChanged, initialState } = schema;
+  const { C, schema, value, onChange, T } = props;
+  const { beforeChange, afterChanged, renderPlaceholder } = schema;
 
   const willOverride = Boolean(beforeChange) || Boolean(afterChanged);
 
@@ -148,9 +178,18 @@ const UniversalInterceptC = React.forwardRef((props: InterceptCProps, ref) => {
   // control the component always.
   const _value = value === undefined ? null : value;
 
+  const placeholder = renderPlaceholder
+    ? renderPlaceholder(schema, props.form)
+    : T(props.cProps.placeholder);
+
   return (
     <div ref={ref as any} className="imhs-div-for-focus">
-      <C {...props.cProps} value={_value} onChange={_onChange} />
+      <C
+        {...props.cProps}
+        placeholder={placeholder}
+        value={_value}
+        onChange={_onChange}
+      />
     </div>
   );
 });

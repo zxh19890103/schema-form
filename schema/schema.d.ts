@@ -73,6 +73,7 @@ export interface Field {
     | "date"
     | "datetime"
     | "time"
+    | "month"
     | "bool"
     | "email"
     | "url"
@@ -150,6 +151,7 @@ export interface Field {
   default?: {
     [k: string]: unknown;
   };
+  placeholder?: string;
   /**
    * 控件的静态参数
    */

@@ -48,9 +48,10 @@ const normalizeSchemaField = (def: SchemaField) => {
     type: def.type,
     componentTag: tag,
     componentProps: {
-      ...def.component?.['props'],
       disabled: def.disabled,
       readOnly: def.readonly,
+      placeholder: def.placeholder,
+      ...def.component?.['props'],
       ...(isObject ? { $def: def } : null),
       ...(tag === 'Select' ? { options: o2options(def.enum) } : null),
     },
@@ -88,6 +89,7 @@ const __ctx__ = React.createContext<ContextValue>({
   collect: null,
   recycle: null,
   tick: null,
+  T: null,
   getMeta: null,
 });
 
@@ -106,6 +108,9 @@ export type CollectedField = {
 export interface ContextValue {
   validators: Record<string, RuleObject[]>;
   components: Record<string, SFC>;
+  ifTranslate?: (txt: string) => boolean;
+  t?: (key: string, ...args: any[]) => string;
+  T: (id: string) => string;
   getMeta: (name: string) => CollectedField;
   collect: (name: string, field: CollectedField) => void;
   recycle: (name: string) => void;

@@ -6,20 +6,17 @@ import {
 import { ContextValue } from './context';
 import { ReactNode } from 'react';
 
-class SchemaFormImpl implements SchemaFormInstanceAbstract {
+export class SchemaFormImpl implements SchemaFormInstanceAbstract {
   $ctx: ContextValue;
   $schema: CoreSchemaForJsonBasedWesForm;
   $defaultSubmit: VoidFunction;
   $defaultReset: VoidFunction;
+  $submitting: boolean = false;
 
-  private div2inputCache: WeakMap<HTMLDivElement, HTMLInputElement>;
+  private div2inputCache = new WeakMap<HTMLDivElement, HTMLInputElement>();
 
   private queryInput(name): HTMLInputElement {
     const { el } = this.getMeta(name);
-
-    if (!this.div2inputCache) {
-      this.div2inputCache = new WeakMap();
-    }
 
     if (this.div2inputCache.has(el)) {
       const input = this.div2inputCache.get(el);
@@ -126,6 +123,4 @@ class SchemaFormImpl implements SchemaFormInstanceAbstract {
   }
 }
 
-interface SchemaFormImpl extends FormInstance {}
-
-export default SchemaFormImpl.prototype;
+export interface SchemaFormImpl extends FormInstance {}
